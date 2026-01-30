@@ -1,0 +1,791 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>てのひら那須しらかわ（Prototype）</title>
+  <meta name="theme-color" content="#0b1220" />
+  <style>
+    :root{
+      --bg:#0b1220;
+      --panel:#121b2e;
+      --panel2:#0f1728;
+      --text:#e7eefc;
+      --muted:#a9b6d6;
+      --line:#253355;
+      --accent:#77e6c6;
+      --accent2:#88a7ff;
+      --warn:#ffd37a;
+      --bad:#ff7a9b;
+      --good:#6ee7a5;
+      --shadow: 0 12px 40px rgba(0,0,0,.35);
+      --radius: 18px;
+      --radius2: 14px;
+      --pad: 18px;
+      --maxw: 560px;
+      --font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans JP", "Hiragino Sans", "Yu Gothic", sans-serif;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:var(--font);
+      background:
+        radial-gradient(1200px 800px at 20% 10%, rgba(136,167,255,.16), transparent 60%),
+        radial-gradient(900px 700px at 80% 30%, rgba(119,230,198,.12), transparent 55%),
+        linear-gradient(180deg, #070b14, var(--bg));
+      color:var(--text);
+    }
+    a{color:inherit}
+    .wrap{
+      min-height:100%;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      padding: 22px 14px 28px;
+    }
+    .shell{
+      width:min(var(--maxw), 100%);
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+    }
+    header{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:12px;
+      padding: 4px 2px;
+    }
+    .brand{
+      display:flex;
+      flex-direction:column;
+      gap:2px;
+    }
+    .brand .kicker{
+      font-size:12px;
+      letter-spacing:.08em;
+      color:var(--muted);
+      text-transform:uppercase;
+    }
+    .brand h1{
+      margin:0;
+      font-size:20px;
+      letter-spacing:.02em;
+    }
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 12px;
+      border:1px solid rgba(136,167,255,.25);
+      background: rgba(16,24,40,.55);
+      border-radius: 999px;
+      color: var(--muted);
+      font-size:12px;
+      backdrop-filter: blur(8px);
+      box-shadow: 0 10px 25px rgba(0,0,0,.18);
+      user-select:none;
+    }
+    .pill b{color:var(--text); font-weight:700}
+    .card{
+      background: linear-gradient(180deg, rgba(18,27,46,.92), rgba(13,20,35,.92));
+      border: 1px solid rgba(37,51,85,.75);
+      border-radius: var(--radius);
+      padding: var(--pad);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+    }
+    .card.tight{padding:14px}
+    .row{display:flex; gap:12px; flex-wrap:wrap}
+    .row > *{flex:1 1 180px}
+    .muted{color:var(--muted)}
+    .small{font-size:12px}
+    .title{
+      margin:0 0 10px 0;
+      font-size:18px;
+      letter-spacing:.01em;
+    }
+    .lead{
+      margin:0 0 12px 0;
+      line-height:1.7;
+      color: var(--text);
+    }
+    .note{
+      margin:10px 0 0;
+      color: var(--muted);
+      font-size:12px;
+      line-height:1.6;
+    }
+    .btns{display:flex; gap:10px; flex-wrap:wrap; margin-top:12px}
+    button, .btn{
+      appearance:none;
+      border:none;
+      cursor:pointer;
+      border-radius: 14px;
+      padding: 12px 14px;
+      font-weight:700;
+      letter-spacing:.01em;
+      font-family:var(--font);
+      transition: transform .06s ease, filter .2s ease, opacity .2s ease;
+      user-select:none;
+      width:100%;
+    }
+    button:active, .btn:active{transform: scale(.99)}
+    .primary{
+      background: linear-gradient(135deg, rgba(119,230,198,.95), rgba(136,167,255,.95));
+      color: #07101c;
+      box-shadow: 0 14px 30px rgba(119,230,198,.14);
+    }
+    .secondary{
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.12);
+      color: var(--text);
+    }
+    .ghost{
+      background: transparent;
+      border: 1px dashed rgba(169,182,214,.35);
+      color: var(--muted);
+    }
+    .danger{
+      background: rgba(255,122,155,.14);
+      border: 1px solid rgba(255,122,155,.35);
+      color: #ffd4df;
+    }
+
+    .divider{
+      height:1px;
+      background: linear-gradient(90deg, transparent, rgba(37,51,85,.95), transparent);
+      margin: 14px 0;
+    }
+
+    /* screens */
+    .screen{display:none}
+    .screen.active{display:block}
+
+    /* camera preview */
+    .preview{
+      border-radius: var(--radius2);
+      border:1px solid rgba(37,51,85,.9);
+      background: rgba(0,0,0,.18);
+      min-height: 180px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      overflow:hidden;
+      position:relative;
+    }
+    .preview img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+      opacity:.95;
+    }
+    .preview .hint{
+      position:absolute;
+      inset:auto 12px 12px 12px;
+      padding:10px 12px;
+      border-radius: 14px;
+      background: rgba(7,16,28,.65);
+      border: 1px solid rgba(255,255,255,.10);
+      color: var(--muted);
+      font-size:12px;
+      line-height:1.55;
+      backdrop-filter: blur(8px);
+    }
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 10px;
+      border-radius: 999px;
+      background: rgba(136,167,255,.12);
+      border:1px solid rgba(136,167,255,.25);
+      color: var(--muted);
+      font-size:12px;
+    }
+    .badge .dot{
+      width:8px;height:8px;border-radius:50%;
+      background: var(--accent);
+      box-shadow: 0 0 0 3px rgba(119,230,198,.15);
+    }
+
+    /* progress */
+    .progress{
+      width:100%;
+      height:10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.05);
+      overflow:hidden;
+    }
+    .bar{
+      height:100%;
+      width:0%;
+      background: linear-gradient(90deg, rgba(119,230,198,.95), rgba(136,167,255,.95));
+      border-radius:999px;
+      transition: width .2s ease;
+    }
+    .steps{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      margin-top:12px;
+    }
+    .chip{
+      font-size:12px;
+      color: var(--muted);
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.04);
+      padding: 8px 10px;
+      border-radius: 999px;
+    }
+    .chip.on{
+      color:#07101c;
+      border:1px solid rgba(119,230,198,.35);
+      background: rgba(119,230,198,.85);
+      font-weight:800;
+    }
+
+    /* result cards */
+    .resultBox{
+      border-radius: var(--radius2);
+      border:1px solid rgba(37,51,85,.85);
+      background: linear-gradient(180deg, rgba(15,23,40,.75), rgba(10,15,28,.75));
+      padding: 14px;
+    }
+    .resultLine{
+      margin:0;
+      font-size:14px;
+      line-height:1.75;
+      color: var(--text);
+    }
+    .resultLine strong{
+      color: #ffffff;
+    }
+    .tagRow{display:flex; gap:8px; flex-wrap:wrap; margin-top:10px}
+    .tag{
+      font-size:12px;
+      padding: 7px 10px;
+      border-radius: 999px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.05);
+      color: var(--muted);
+    }
+
+    /* route list */
+    .routeList{display:flex; flex-direction:column; gap:10px; margin-top:10px}
+    .routeItem{
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.04);
+      border-radius: 14px;
+      padding: 12px;
+      display:flex;
+      gap:10px;
+      align-items:flex-start;
+    }
+    .routeIcon{
+      width:38px;height:38px;border-radius:12px;
+      background: rgba(119,230,198,.12);
+      border:1px solid rgba(119,230,198,.22);
+      display:flex;align-items:center;justify-content:center;
+      flex: 0 0 38px;
+      color: var(--accent);
+      font-weight:900;
+    }
+    .routeMeta{flex:1}
+    .routeMeta .name{margin:0; font-weight:900}
+    .routeMeta .desc{margin:4px 0 0; color:var(--muted); font-size:12px; line-height:1.55}
+    .routeMeta .mini{margin:8px 0 0; color:var(--muted); font-size:12px}
+
+    /* admin */
+    .adminGrid{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+    .stat{
+      padding:12px;
+      border-radius: 14px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.04);
+    }
+    .stat .k{font-size:12px; color:var(--muted)}
+    .stat .v{font-size:20px; font-weight:900; margin-top:4px}
+    .footer{
+      text-align:center;
+      color: rgba(169,182,214,.75);
+      font-size:12px;
+      padding: 8px 0 0;
+    }
+    .hide{display:none !important}
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="shell">
+      <header>
+        <div class="brand">
+          <div class="kicker">Prototype</div>
+          <h1>てのひら那須しらかわ</h1>
+          <div class="muted small">観光×意味付け体験（パートナー向けデモ）</div>
+        </div>
+        <div class="pill" id="modePill" title="URLに ?admin=1 を付けると管理画面が出ます">
+          <span>MODE</span> <b id="modeText">DEMO</b>
+        </div>
+      </header>
+
+      <!-- Screen 1: Start -->
+      <section class="card screen active" id="sStart">
+        <h2 class="title">あなたの“今の流れ”を、少しだけ。</h2>
+        <p class="lead">
+          当たる／当たらないを競うものではありません。<br/>
+          迷いを減らして、次の一歩を軽くします。
+        </p>
+        <div class="resultBox">
+          <p class="resultLine">
+            <strong>所要：</strong> 5〜10分<br/>
+            <strong>保存：</strong> 画像・個人情報は保存しません<br/>
+            <strong>目的：</strong> 行き先の“理由付け”
+          </p>
+        </div>
+        <div class="btns">
+          <button class="primary" id="btnStart">はじめる</button>
+          <button class="ghost" id="btnSkipDemo">（撮影なしで）すぐ体験する</button>
+        </div>
+        <p class="note">
+          ※ このデモは「体験の流れ」を見せるためのプロトタイプです。診断精度を主張しません。
+        </p>
+      </section>
+
+      <!-- Screen Admin (optional) -->
+      <section class="card screen" id="sAdmin">
+        <h2 class="title">管理ダッシュボード（デモ）</h2>
+        <div class="adminGrid" id="adminStats"></div>
+        <div class="divider"></div>
+        <p class="muted small">
+          ※ 数値はデモ用に生成しています（実運用では、表示回数・マップ遷移・クーポン利用等に置換可能）。
+        </p>
+        <div class="btns">
+          <button class="secondary" id="btnAdminBack">戻る</button>
+          <button class="ghost" id="btnAdminReset">デモ数値を再生成</button>
+        </div>
+      </section>
+
+      <!-- Screen 2: Capture -->
+      <section class="card screen" id="sCapture">
+        <h2 class="title">手のひらを撮影</h2>
+        <div class="badge"><span class="dot"></span> 画像は端末内で扱い、保存しません</div>
+
+        <div style="height:10px"></div>
+        <div class="preview" id="preview">
+          <div class="muted small" id="previewEmpty">ここにプレビューが表示されます</div>
+          <img id="previewImg" class="hide" alt="preview"/>
+          <div class="hint">
+            明るい場所で、手のひら全体が入るように。<br/>
+            スマホはそのままカメラが開きます。
+          </div>
+        </div>
+
+        <div style="height:12px"></div>
+
+        <input id="fileInput" type="file" accept="image/*" capture="environment" class="hide" />
+
+        <div class="btns">
+          <button class="primary" id="btnPick">撮影／画像を選ぶ</button>
+          <button class="secondary" id="btnToAnalyze" disabled>解析へ進む</button>
+          <button class="ghost" id="btnBack1">戻る</button>
+        </div>
+
+        <p class="note">
+          ※ カメラが開かない端末では「画像を選ぶ」動きになります（iPad/PCなど）。
+        </p>
+      </section>
+
+      <!-- Screen 3: Analyze -->
+      <section class="card screen" id="sAnalyze">
+        <h2 class="title">流れを読み取っています…</h2>
+        <p class="muted" id="analyzeText">・今の状態　・動きやすい方向　・境界の位置</p>
+        <div class="progress" aria-label="progress">
+          <div class="bar" id="bar"></div>
+        </div>
+
+        <div class="steps" id="chips">
+          <div class="chip" data-step="0">輪郭</div>
+          <div class="chip" data-step="1">温度</div>
+          <div class="chip" data-step="2">リズム</div>
+          <div class="chip" data-step="3">境界</div>
+          <div class="chip" data-step="4">整合</div>
+        </div>
+
+        <div class="btns">
+          <button class="secondary" id="btnCancelAnalyze">キャンセル</button>
+        </div>
+
+        <p class="note">
+          ※ 診断はエンタメ設計です。正解の証明をしないため、クレームが起きにくい構造です。
+        </p>
+      </section>
+
+      <!-- Screen 4: Result -->
+      <section class="card screen" id="sResult">
+        <h2 class="title">結果</h2>
+
+        <div class="resultBox">
+          <p class="resultLine" id="resultMain"></p>
+          <div class="tagRow" id="tagRow"></div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="resultBox">
+          <p class="resultLine" id="resultSub"></p>
+          <p class="note" id="resultNote"></p>
+        </div>
+
+        <div class="btns">
+          <button class="primary" id="btnToRoute">この流れに合うルートを見る</button>
+          <button class="secondary" id="btnRedo">撮り直す</button>
+          <button class="ghost" id="btnHome">最初へ</button>
+        </div>
+      </section>
+
+      <!-- Screen 5: Route -->
+      <section class="card screen" id="sRoute">
+        <h2 class="title">おすすめの立ち寄り先（白河方面）</h2>
+
+        <div class="resultBox">
+          <p class="resultLine">
+            <strong>所要：</strong><span id="driveTime">約--分</span><br/>
+            <strong>今からでも：</strong> 無理のない距離<br/>
+            <strong>設計：</strong> 選択肢は最大3つ（迷わせない）
+          </p>
+        </div>
+
+        <div class="routeList" id="routeList"></div>
+
+        <div class="btns">
+          <a class="btn primary" id="btnMap" target="_blank" rel="noopener">マップで見る</a>
+          <button class="secondary" id="btnAgain">もう一度（別ルート）</button>
+          <button class="ghost" id="btnHome2">最初へ</button>
+        </div>
+
+        <p class="note">
+          ※ 実証では、協賛店舗やイベント、クーポン導線に差し替え可能です。
+        </p>
+      </section>
+
+      <div class="footer">
+        © Prototype / Tenohira Nasu-Shirakawa
+      </div>
+    </div>
+  </div>
+
+<script>
+(() => {
+  // ---------- helpers ----------
+  const $ = (id) => document.getElementById(id);
+  const screens = ["sStart","sCapture","sAnalyze","sResult","sRoute","sAdmin"].map($);
+
+  const params = new URLSearchParams(location.search);
+  const isAdmin = params.get("admin") === "1";
+
+  const modeText = $("modeText");
+  const modePill = $("modePill");
+
+  function show(id){
+    screens.forEach(s => s.classList.remove("active"));
+    $(id).classList.add("active");
+    window.scrollTo({top:0, behavior:"instant"});
+  }
+
+  function rand(min, max){ return Math.floor(Math.random() * (max - min + 1)) + min; }
+  function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+  function shuffle(arr){
+    const a = arr.slice();
+    for(let i=a.length-1;i>0;i--){
+      const j = Math.floor(Math.random()*(i+1));
+      [a[i],a[j]] = [a[j],a[i]];
+    }
+    return a;
+  }
+
+  // ---------- admin mode ----------
+  function genAdminStats(){
+    const base = rand(18, 52);
+    const showRate = rand(48, 78);
+    const mapJump = Math.max(0, Math.round(base * (showRate/100) * (rand(45,80)/100)));
+    const coupon = Math.max(0, Math.round(mapJump * (rand(8,22)/100)));
+    const avg = rand(6, 11);
+
+    const stats = [
+      {k:"本日の体験数", v: base},
+      {k:"白河ルート表示率", v: showRate + "%"},
+      {k:"マップ遷移", v: mapJump},
+      {k:"想定クーポン到達", v: coupon},
+      {k:"平均所要（分）", v: avg},
+      {k:"設置コスト感", v: "低（iPad 1台）"}
+    ];
+
+    const grid = $("adminStats");
+    grid.innerHTML = "";
+    stats.forEach(s => {
+      const div = document.createElement("div");
+      div.className = "stat";
+      div.innerHTML = `<div class="k">${s.k}</div><div class="v">${s.v}</div>`;
+      grid.appendChild(div);
+    });
+  }
+
+  if(isAdmin){
+    modeText.textContent = "ADMIN";
+    modePill.style.borderColor = "rgba(255,211,122,.35)";
+    modePill.style.background = "rgba(255,211,122,.08)";
+    genAdminStats();
+    show("sAdmin");
+  } else {
+    modeText.textContent = "DEMO";
+  }
+
+  $("btnAdminBack")?.addEventListener("click", () => show("sStart"));
+  $("btnAdminReset")?.addEventListener("click", genAdminStats);
+
+  // ---------- state ----------
+  let hasImage = false;
+  let imageDataUrl = null;
+  let currentResult = null;
+  let currentRoute = null;
+
+  const fileInput = $("fileInput");
+  const previewImg = $("previewImg");
+  const previewEmpty = $("previewEmpty");
+  const btnToAnalyze = $("btnToAnalyze");
+
+  function setPreview(dataUrl){
+    imageDataUrl = dataUrl;
+    hasImage = true;
+    previewImg.src = dataUrl;
+    previewImg.classList.remove("hide");
+    previewEmpty.classList.add("hide");
+    btnToAnalyze.disabled = false;
+  }
+
+  // ---------- start screen actions ----------
+  $("btnStart").addEventListener("click", () => show("sCapture"));
+
+  $("btnSkipDemo").addEventListener("click", () => {
+    // demo route without image
+    imageDataUrl = null;
+    hasImage = false;
+    startAnalyze();
+  });
+
+  // ---------- capture actions ----------
+  $("btnPick").addEventListener("click", () => fileInput.click());
+  $("btnBack1").addEventListener("click", () => show("sStart"));
+
+  fileInput.addEventListener("change", (e) => {
+    const f = e.target.files && e.target.files[0];
+    if(!f) return;
+    const reader = new FileReader();
+    reader.onload = () => setPreview(reader.result);
+    reader.readAsDataURL(f);
+  });
+
+  $("btnToAnalyze").addEventListener("click", startAnalyze);
+
+  // ---------- analyze ----------
+  const bar = $("bar");
+  const chips = Array.from(document.querySelectorAll("#chips .chip"));
+  const analyzeText = $("analyzeText");
+
+  function startAnalyze(){
+    show("sAnalyze");
+    bar.style.width = "0%";
+    chips.forEach(c => c.classList.remove("on"));
+    analyzeText.textContent = "・今の状態　・動きやすい方向　・境界の位置";
+
+    // fake progress steps
+    let p = 0;
+    let step = 0;
+    const phrases = [
+      "輪郭を見ています…（迷いの形）",
+      "温度を見ています…（いまの勢い）",
+      "リズムを見ています…（動きやすさ）",
+      "境界を見ています…（越えどき）",
+      "整合を取っています…（結論）"
+    ];
+
+    const timer = setInterval(() => {
+      // progress
+      p += rand(9, 16);
+      if(p > 100) p = 100;
+      bar.style.width = p + "%";
+
+      // step highlight
+      if(step < chips.length){
+        chips[step].classList.add("on");
+        analyzeText.textContent = phrases[step];
+        step++;
+      }
+
+      if(p >= 100){
+        clearInterval(timer);
+        // generate result & go
+        currentResult = generateResult();
+        renderResult(currentResult);
+        show("sResult");
+      }
+    }, 280);
+
+    $("btnCancelAnalyze").onclick = () => {
+      clearInterval(timer);
+      // return to capture if they were there, else home
+      if(hasImage) show("sCapture"); else show("sStart");
+    };
+  }
+
+  // ---------- result generator ----------
+  function generateResult(){
+    // Safe, non-assertive: "〜になりやすい"
+    const archetypes = [
+      {
+        name: "境界を越える流れ",
+        main: "あなたは今、<strong>「境界を越える流れ」</strong>にいます。",
+        sub: "留まるより、少し動いた方が<strong>満足度が高くなりやすい</strong>状態です。",
+        tags: ["移動◎","切り替え◎","短距離ドライブ◎"]
+      },
+      {
+        name: "整える流れ",
+        main: "あなたは今、<strong>「整える流れ」</strong>にいます。",
+        sub: "寄り道で気持ちを整えると、次の行動が<strong>スムーズになりやすい</strong>状態です。",
+        tags: ["休憩◎","景色◎","深呼吸◎"]
+      },
+      {
+        name: "寄り道の流れ",
+        main: "あなたは今、<strong>「寄り道の流れ」</strong>にいます。",
+        sub: "目的地を一つ増やすと、今日の体験が<strong>濃くなりやすい</strong>状態です。",
+        tags: ["寄り道◎","発見◎","写真◎"]
+      },
+      {
+        name: "締めに向かう流れ",
+        main: "あなたは今、<strong>「締めに向かう流れ」</strong>にいます。",
+        sub: "最後に“良い買い物・良い食事”で締めると、満足感が<strong>上がりやすい</strong>状態です。",
+        tags: ["買い物◎","食◎","締め◎"]
+      }
+    ];
+
+    const tone = pick([
+      "いまのあなたは“次どうする？”が重くなりやすい日。だからこそ、理由がある行き先が効きます。",
+      "迷いが出る前に、短い移動で区切るとスッキリしやすいです。",
+      "今日は“勢い”より“納得”を増やすと満足度が伸びやすいです。"
+    ]);
+
+    const a = pick(archetypes);
+    const drive = rand(22, 48); // minutes
+    const confidence = rand(58, 84); // demo meter
+
+    return { archetype: a, tone, drive, confidence };
+  }
+
+  function renderResult(res){
+    $("resultMain").innerHTML = res.archetype.main;
+    $("resultSub").innerHTML =
+      `${res.archetype.sub}<br/><strong>流れ指数：</strong> ${res.confidence}%（デモ）`;
+
+    $("resultNote").textContent =
+      "※ 当たる/当たらないの証明はしません。行き先の“理由”を作るための演出です。";
+
+    const tagRow = $("tagRow");
+    tagRow.innerHTML = "";
+    res.archetype.tags.forEach(t => {
+      const span = document.createElement("span");
+      span.className = "tag";
+      span.textContent = t;
+      tagRow.appendChild(span);
+    });
+  }
+
+  // ---------- routes ----------
+  const spots = [
+    {type:"食", name:"白河ラーメン（老舗）", desc:"“締め”に強い。短時間で満足度が上がりやすい。", q:"白河 ラーメン"},
+    {type:"休", name:"南湖公園（散歩）", desc:"整える系。気分の切り替えに向く。", q:"南湖公園"},
+    {type:"買", name:"道の駅（地元の買い物）", desc:"家族・カップルどちらも刺さりやすい。", q:"白河 道の駅"},
+    {type:"景", name:"関山周辺（景色）", desc:"寄り道の満足感が出やすい。", q:"白河 景色"},
+    {type:"甘", name:"ご当地スイーツ", desc:"“迷い”を軽くする。会話が増えやすい。", q:"白河 スイーツ"},
+    {type:"湯", name:"日帰り温泉（軽め）", desc:"疲れた日の最適解になりやすい。", q:"白河 日帰り温泉"}
+  ];
+
+  function makeRoute(res){
+    // choose 3 based on archetype vibe
+    let pool = spots.slice();
+    if(res.archetype.name.includes("締め")) pool = pool.filter(s => ["食","買","甘"].includes(s.type));
+    if(res.archetype.name.includes("整える")) pool = pool.filter(s => ["休","景","湯","甘"].includes(s.type));
+    if(res.archetype.name.includes("寄り道")) pool = pool.filter(s => ["景","休","甘","買"].includes(s.type));
+    if(res.archetype.name.includes("境界")) pool = pool.filter(s => ["食","休","景","買"].includes(s.type));
+
+    pool = shuffle(pool);
+    const selected = pool.slice(0, 3);
+    return selected;
+  }
+
+  function renderRoute(list, res){
+    $("driveTime").textContent = `約${res.drive}分`;
+    const routeList = $("routeList");
+    routeList.innerHTML = "";
+
+    list.forEach((s, idx) => {
+      const item = document.createElement("div");
+      item.className = "routeItem";
+      item.innerHTML = `
+        <div class="routeIcon">${s.type}</div>
+        <div class="routeMeta">
+          <p class="name">${idx+1}. ${s.name}</p>
+          <p class="desc">${s.desc}</p>
+          <p class="mini">提案理由：あなたの「${res.archetype.name}」に合う寄り道</p>
+        </div>
+      `;
+      routeList.appendChild(item);
+    });
+
+    // Google Maps query link (generic)
+    const q = "白河 " + list.map(s => s.q).join(" ");
+    const url = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(q);
+    $("btnMap").href = url;
+  }
+
+  // ---------- result screen actions ----------
+  $("btnToRoute").addEventListener("click", () => {
+    currentRoute = makeRoute(currentResult);
+    renderRoute(currentRoute, currentResult);
+    show("sRoute");
+  });
+
+  $("btnRedo").addEventListener("click", () => {
+    // reset capture only
+    hasImage = false;
+    imageDataUrl = null;
+    previewImg.classList.add("hide");
+    previewEmpty.classList.remove("hide");
+    fileInput.value = "";
+    btnToAnalyze.disabled = true;
+    show("sCapture");
+  });
+
+  $("btnHome").addEventListener("click", () => show("sStart"));
+  $("btnHome2").addEventListener("click", () => show("sStart"));
+
+  // ---------- route screen actions ----------
+  $("btnAgain").addEventListener("click", () => {
+    // new route from same archetype (demo feeling)
+    currentRoute = makeRoute(currentResult);
+    renderRoute(currentRoute, currentResult);
+  });
+
+  // ---------- mode pill click ----------
+  modePill.addEventListener("click", () => {
+    // quick hint
+    alert("管理画面：URL末尾に ?admin=1 を付けて開いてください\n例）.../index.html?admin=1");
+  });
+})();
+</script>
+</body>
+</html>
